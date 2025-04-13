@@ -27,5 +27,10 @@ def delete_key(key: str):
         return f"key: {key} not found"
     return f"success: true, key: {key}"
 
+@app.route("/kv/list", methods=['GET'])
+def list_keys():
+    keys = store.list_keys()
+    return f"success: true, keys: {keys}"
+
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=5000, debug=True)
