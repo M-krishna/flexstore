@@ -1,8 +1,9 @@
+import argparse
 from flask import Flask, request
 from persistent_kv_store import PersistentKVStore
 
 app = Flask(__name__)
-store = PersistentKVStore("server_store.json")
+store = PersistentKVStore("server_store.json") # default store
 
 
 @app.route("/kv/<key>", methods=['GET'])
@@ -33,4 +34,11 @@ def list_keys():
     return f"success: true, keys: {keys}"
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    parser = argparse.ArgumentParser(description="Run a key value server node.")
+    parser.add_argument("--port", type=int, default=5000, help="port to run the server on")
+    parser.add_argument("--store", type=str, default="server_store.json", help="JSON file to use for persistence")
+    args = parser.parse_args()
+
+    # Initialize the store with the provided file path
+    store = PersistentKVStore(args.store)
+    app.run(host='0.0.0.0', port=args.port, debug=True)
