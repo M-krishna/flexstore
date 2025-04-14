@@ -3,6 +3,8 @@
 
 A distributed key-value store implementation with service discovery and load balancing.
 
+> `NOTE:` Currently work in progress. NOT READY FOR PRODUCTION USE!
+
 ## Architecture
 ```
                ┌─────────────┐
