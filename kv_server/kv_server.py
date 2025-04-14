@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 import sys
 import requests
-import argparse
-from flask import Flask, request
+from flask import Flask, request, jsonify
 from persistent_kv_store import PersistentKVStore
 
 app = Flask(__name__)
@@ -13,28 +12,28 @@ store = PersistentKVStore("server_store.json") # default store
 def get_value(key: str):
     value = store.get(key)
     if not value:
-        return "key not found", 404
-    return f"key: {key}, value: {value}"
+        return jsonify({"success": False, "error": "key not found"}), 404
+    return jsonify({"key": key, "value": value}), 200
 
 @app.route("/kv/<key>", methods=['PUT'])
 def put_value(key: str):
     value = request.get_data(as_text=True)
     if not value:
-        return "value should be None", 400
+        return jsonify({"success": False, "error": "Value should not be None"}), 400
     store.put(key, value)
-    return f"status: success, key: {key}"
+    return jsonify({"success": True, "key": key}), 201
 
 @app.route("/kv/<key>", methods=['DELETE'])
 def delete_key(key: str):
     success = store.delete(key)
     if not success:
-        return f"key: {key} not found"
-    return f"success: true, key: {key}"
+        return jsonify({"success": False, "error": f"{key} not found"}), 404
+    return jsonify({"success": True, "key": key}), 200
 
 @app.route("/kv/list", methods=['GET'])
 def list_keys():
     keys = store.list_keys()
-    return f"success: true, keys: {keys}"
+    return jsonify({"success": True, "keys": keys}), 200
 
 
 def register_with_service_register(node_url: str, registry_url: str):
@@ -55,16 +54,19 @@ def register_with_service_register(node_url: str, registry_url: str):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Run a key value server node.")
-    parser.add_argument("--port", type=int, default=5000, help="port to run the server on")
-    parser.add_argument("--store", type=str, help="JSON file to use for persistence. Example, 'server_store.json'", required=True)
-    parser.add_argument("--registry_url", type=str, default="http://localhost:8000/register", help="Registry server URL")
-    args = parser.parse_args()
+    import os
+    import socket
+
+    # Get the configuration from environment variable
+    port = int(os.getenv('PORT', 5000))
+    store_file = os.getenv('STORE_FILE', 'server_store.json')
+    registry_url = os.getenv('REGISTRY_URL', 'http://localhost:8000/register')
+    host = socket.gethostname()
 
     # Initialize the store with the provided file path
-    store = PersistentKVStore(args.store)
+    store = PersistentKVStore(store_file)
 
     # Determine the node's URL
-    node_url = f"http://localhost:{args.port}"
-    register_with_service_register(node_url, args.registry_url)
-    app.run(host='0.0.0.0', port=args.port, debug=True)
+    node_url = f"http://{host}:{port}"
+    register_with_service_register(node_url, registry_url)
+    app.run(host='0.0.0.0', port=port, debug=True)

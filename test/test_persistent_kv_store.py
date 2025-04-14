@@ -1,7 +1,7 @@
 import unittest
 import os
 import json
-from persistent_kv_store import PersistentKVStore
+from kv_server.persistent_kv_store import PersistentKVStore
 
 # This test is written by AI
 class TestPersistentKVStore(unittest.TestCase):

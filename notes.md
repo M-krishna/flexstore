@@ -46,4 +46,10 @@ To acheive something like this, we need to implement the following:
 
 By implementing this, we should be able to acheive the above
 
+**Currently implemented**
+
+1. Gateway server, which is present in `gateway_server.py`
+2. Service registry, which is present in `service_registry.py`
+3. In `kv_server.py`, the logic was implemented as whenever the node/instance is started, it'll will get registered in the service registry
+
 ## What is Consistent hashing?

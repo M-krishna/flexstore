@@ -1,0 +1,52 @@
+version: '3'
+
+services:
+  registry:
+    build:
+      context: .
+      dockerfile: service_registry/Dockerfile
+    environment:
+      - PORT=8000
+    ports:
+      - "8000:8000"
+
+  gateway:
+    build:
+      context: .
+      dockerfile: gateway_server/Dockerfile
+    environment:
+      - HOST=0.0.0.0
+      - PORT=8002
+      - REGISTRY_URL=http://registry:8000
+    ports:
+     - "8002:8002"
+    depends_on:
+      - registry
+
+  kv_server_1:
+    build:
+      context: .
+      dockerfile: kv_server/Dockerfile
+    environment:
+      - HOST=0.0.0.0
+      - PORT=5000
+      - STORE_FILE=server1_store.json
+      - REGISTRY_URL=http://registry:8000/register
+    ports:
+      - "5000:5000"
+    depends_on:
+      - registry
+
+  kv_server_2:
+    build:
+      context: .
+      dockerfile: kv_server/Dockerfile
+    environment:
+      - HOST=0.0.0.0
+      - PORT=5001
+      - STORE_FILE=server2_store.json
+      - REGISTRY_URL=http://registry:8000/register
+    ports:
+      - "5001:5001"
+    depends_on:
+      - registry

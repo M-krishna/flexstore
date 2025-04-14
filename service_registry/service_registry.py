@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-from flask import Flask, request
-
+import os
+from flask import Flask, request, jsonify
 
 app = Flask(__name__)
 nodes = set() # A simple set to store unique URLs
@@ -17,10 +17,10 @@ def register_nodes():
 
 @app.route("/nodes", methods=["GET"])
 def get_nodes():
-    return f"nodes: {list(nodes)}"
+    return jsonify({"nodes": list(nodes)})
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8000)
+    app.run(host="0.0.0.0", port=os.environ['PORT'])
 
 

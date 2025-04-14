@@ -37,4 +37,4 @@ class PersistentKVStore:
         return False
 
     def list_keys(self):
-        return self.storage.keys()
+        return list(self.storage.keys())
