@@ -53,3 +53,30 @@ By implementing this, we should be able to acheive the above
 3. In `kv_server.py`, the logic was implemented as whenever the node/instance is started, it'll will get registered in the service registry
 
 ## What is Consistent hashing?
+Consistent hashing is a technique used in distributed systems to distribute data across a dynamic set of nodes (like servers or caches) such that minimal reshuffling of data is required when nodes are added or removed. It's particularly useful in systems like distributed systems like distributed caches, databases, and load balancers.
+
+### Traditional hashing Vs Consistent hashing
+In traditional hashing, a key is assigned to a server using a simple modulo operation:
+```
+server = hash(key) % N, where N = number of servers
+```
+
+However when a server is added or removed, `N` changes, causing almost all keys to be remapped, leading to massive cache misses or data movement.
+
+Consistent hashing addresses this issue by mapping both servers and keys onto a circle (or ring) using a hash function. Each key is assigned to the next server in the clockwise direction. When a server is added or removed, only the keys between the server and its predecessor need to move, minimizing the amount of data that needs to be reassigned.
+
+## Currently Implemented
+As of now, I have implemented the following:
+* Persistent Key Value server, which persists data in a json file and saves in the same server.
+* Service registry and discovery.
+    * Whenever a new Key Value server is added or removed. It should be updated in the service registry.
+* Gateway server. This is the server which the client interacts with. This server talks to the service registry server to get the available nodes and transfers the client request.
+
+## Update Key Value server and Service Registry server with the following
+* Key Value Server
+    * Expose a `/health-check` endpoint that returns a 200 OK as response. This indicates that the server is up and running properly
+    * For debugging, expose a `/destroy` endpoint which kills the server.
+* Service Registry
+    * Poll the `/health-check` endpoint of the Key Value servers at some interval to check if the nodes are healthy or not.
+    * If the nodes are healthy, then fine.
+    * If the nodes are unhealthy, then we need to stop forwarding request to the unhealthy server
