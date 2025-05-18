@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 import sys
+import os
+import socket
 import requests
+from threading import Timer
 from flask import Flask, request, jsonify
 from persistent_kv_store import PersistentKVStore
 
@@ -35,6 +38,33 @@ def list_keys():
     keys = store.list_keys()
     return jsonify({"success": True, "keys": keys}), 200
 
+@app.route("/health-check", methods=['GET'])
+def health_check():
+    return jsonify({"success": True}), 200
+
+@app.route("/destroy", methods=['GET'])
+def destroy():
+    host = socket.gethostname()
+    # TODO: fix duplicate
+    port = int(os.getenv('PORT', 5000))
+    registry_url = os.getenv('REGISTRY_URL', 'http://localhost:8000')
+    server_url = f"http://{host}:{port}"
+
+    try:
+        # Deregistry from the registry
+        response = requests.delete(f"{registry_url}/deregister", json={"node_url": server_url})
+
+        # Save store state
+        store._save()
+
+        # Schedule shutdown
+        def shutdown():
+            os._exit(0)
+
+        Timer(1.0, shutdown).start()
+        return jsonify({"success": True, "message": "Server shut down"}), 200
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
 
 def register_with_service_register(node_url: str, registry_url: str):
     try:
@@ -54,8 +84,6 @@ def register_with_service_register(node_url: str, registry_url: str):
 
 
 if __name__ == "__main__":
-    import os
-    import socket
 
     # Get the configuration from environment variable
     port = int(os.getenv('PORT', 5000))
@@ -68,5 +96,5 @@ if __name__ == "__main__":
 
     # Determine the node's URL
     node_url = f"http://{host}:{port}"
-    register_with_service_register(node_url, registry_url)
+    register_with_service_register(node_url, f"{registry_url}/register")
     app.run(host='0.0.0.0', port=port, debug=True)
