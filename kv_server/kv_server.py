@@ -52,7 +52,7 @@ def destroy():
 
     try:
         # Deregistry from the registry
-        response = requests.delete(f"{registry_url}/deregister", json={"node_url": server_url})
+        requests.delete(f"{registry_url}/deregister", json={"node_url": server_url})
 
         # Save store state
         store._save()

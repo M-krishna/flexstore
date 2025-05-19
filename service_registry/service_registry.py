@@ -1,11 +1,39 @@
 #!/usr/bin/env python3
 import os
+import time
+import requests
 from flask import Flask, request, jsonify
 from flask_cors import CORS
+from threading import Thread
 
 app = Flask(__name__)
 CORS(app)
 nodes = set() # A simple set to store unique URLs
+
+HEALTH_CHECK_TIME_INTERVAL = 5.0 # seconds
+
+# Health check polling service
+def health_check_poll():
+    while True:
+        unhealthy_nodes = set()
+        for node in nodes:
+            try:
+                response = requests.get(f"{node}/health-check", timeout=3)
+                if response.status_code != 200:
+                    print(f"Node {node} unhealthy: bad status code: {response.status_code}", flush=True)
+                    unhealthy_nodes.add(node)
+            except Exception as e:
+                print(f"Node {node} unhealthy: {str(e)}", flush=True)
+                unhealthy_nodes.add(node)
+        
+        for node in unhealthy_nodes:
+            nodes.remove(node)
+            print(f"Deregistered unhealthy node: {node}")
+        
+        time.sleep(HEALTH_CHECK_TIME_INTERVAL)
+
+health_check_thread = Thread(target=health_check_poll, daemon=True)
+health_check_thread.start()
 
 @app.route("/register", methods=['POST'])
 def register_nodes():
