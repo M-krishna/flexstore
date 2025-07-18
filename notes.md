@@ -52,6 +52,10 @@ By implementing this, we should be able to acheive the above
 2. Service registry, which is present in `service_registry.py`
 3. In `kv_server.py`, the logic was implemented as whenever the node/instance is started, it'll will get registered in the service registry
 
+### What is a hash function?
+A hash function is a mathematical algorithm that transforms input data of any size - such as text, numbers, or files - into a fixed-size string of characters, typically a sequence of numbers and letters.
+**Common hash functions:** MD5, SHA-1, SHA-256
+
 ## What is Consistent hashing?
 Consistent hashing is a technique used in distributed systems to distribute data across a dynamic set of nodes (like servers or caches) such that minimal reshuffling of data is required when nodes are added or removed. It's particularly useful in systems like distributed systems like distributed caches, databases, and load balancers.
 
@@ -80,3 +84,7 @@ As of now, I have implemented the following:
     * Poll the `/health-check` endpoint of the Key Value servers at some interval to check if the nodes are healthy or not.
     * If the nodes are healthy, then fine.
     * If the nodes are unhealthy, then we need to stop forwarding request to the unhealthy server
+
+## Problems with the traditional hashing approach
+
+Let's say we have 5 storage nodes

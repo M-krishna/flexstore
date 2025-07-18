@@ -96,5 +96,10 @@ if __name__ == "__main__":
 
     # Determine the node's URL
     node_url = f"http://{host}:{port}"
+
+    # Server name
+    hostname = socket.gethostname()
+    ip_addr = socket.gethostbyname(hostname)
+
     register_with_service_register(node_url, f"{registry_url}/register")
     app.run(host='0.0.0.0', port=port, debug=True)
